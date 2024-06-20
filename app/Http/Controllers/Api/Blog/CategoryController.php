@@ -3,26 +3,23 @@
 namespace App\Http\Controllers\Api\Blog;
 
 use App\Http\Controllers\Blog\BaseController;
-use App\Models\BlogPost;
-use Carbon\Traits\Date;
+use App\Models\BlogCategory;
 use Illuminate\Http\Request;
 
-class PostController extends BaseController
+class CategoryController extends BaseController
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-
-        $posts = BlogPost::with(['user', 'category'])->paginate(5);
+        $posts = BlogCategory::with('parentCategory')->paginate(5);
 
         return $posts;
     }
-
-    public function get()
+    public function getForComboBox()
     {
-        $posts = BlogPost::with(['user', 'category'])->get();
+        $posts = BlogCategory::with('parentCategory')->get();
         return $posts;
     }
     /**
@@ -36,29 +33,22 @@ class PostController extends BaseController
     /**
      * Store a newly created resource in storage.
      */
-    /*'title',
-    'slug',
-    'category_id',
-    'excerpt',
-    'content_raw',
-    'is_published',
-    'published_at',*/
+    /* 'title',
+        'slug',
+        'parent_id',
+        'description',*/
     public function store(Request $request)
     {
-        /* $data = $request->input(); //отримаємо масив даних, які надійшли з форми
-         $item = (new BlogPost())->create($data);*/
-        $newPost = BlogPost::with(['user', 'category'])->create([
+        $newCategory = BlogCategory::with('parentCategory')->create([
             'title' => $request->title,
             'slug' => $request->slug,
-            'category_id' => $request->category_id,
-            'excerpt' =>$request->excerpt,
-            'content_raw' => $request->content_raw,
-            'is_published' => $request->is_published
+            'parent_id' => $request->parent_id,
+            'description' =>$request->description
         ]);
-        if($newPost){
+        if($newCategory){
             return response()->json([
                 'status' => 200,
-                'message' => "Post Created Successfully"
+                'message' => "Category Created Successfully"
             ],200);
         }else{
             return response()->json([
@@ -73,9 +63,9 @@ class PostController extends BaseController
      */
     public function show(string $id)
     {
-        $post = BlogPost::with(['user', 'category'])->find($id);
+        $category = BlogCategory::with('parentCategory')->find($id);
 
-        return $post;
+        return $category;
     }
 
     /**
@@ -91,26 +81,20 @@ class PostController extends BaseController
      */
     public function update(Request $request, string $id)
     {
-        $post = BlogPost::find($id);
-
-        if (!$post) {
+        $category = BlogCategory::find($id);
+        if (!$category) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Post not found'
+                'message' => 'Category not found'
             ], 404);
         }
-        if($request->is_published === true && $post->is_published ===false)
-        {
-            $post->published_at = now();
-        }
-        // Update only the fields that were sent in the request
-        $post->update($request->all());
+        $category->update($request->all());
 
         return response()->json([
             'status' => 200,
-            'message' => 'Post updated successfully',
-            'data' => $post
-        ], 200);
+            'message' => 'Category updated successfully',
+            'data' =>$category
+        ],  200);
     }
 
     /**
@@ -118,26 +102,24 @@ class PostController extends BaseController
      */
     public function destroy(string $id)
     {
-        $post = BlogPost::find($id);
-
-        if (!$post) {
+        $category =BlogCategory::find($id);
+        if (!$category) {
             return response()->json([
                 'status' => 404,
-                'message' => 'Post not found'
+                'message' => 'Category not found'
             ], 404);
         }
-
         try {
-            $post->delete();
+            $category->delete();
             return response()->json([
                 'status' => 200,
-                'message' => 'Post deleted successfully'
+                'message' => 'Category deleted successfully'
             ], 200);
         } catch (\Exception $e) {
             // Handle delete exception
             return response()->json([
                 'status' => 500,
-                'message' => 'Failed to delete post'
+                'message' => 'Failed to delete category'
             ], 500);
         }
     }

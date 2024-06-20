@@ -50,5 +50,4 @@ Route::group($groupData, function () {
         ->except(['show'])                               //не робити маршрут для метода show
         ->names('blog.admin.posts');
 });
-Route::get('api/blog/posts', [\App\Http\Controllers\Api\Blog\PostController::class, 'index']);
-Route::get('api/blog/posts/{id}', [\App\Http\Controllers\Api\Blog\PostController::class, 'show']);
+
